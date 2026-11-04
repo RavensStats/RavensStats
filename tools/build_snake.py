@@ -47,35 +47,104 @@ def grid(cal):
 
 
 def route(cells, start):
-    """Greedy: walk to the nearest uneaten day (BFS over existing cells). Returns steps and eat indices."""
+    """Play it like the game: one step at a time, never into a cell the body covers.
+
+    Each step heads for the nearest uneaten day through free cells, but only takes a move that
+    leaves the head enough open space to fit the body (so it can't wall itself in); with no
+    meal reachable it takes the roomiest move and waits for the tail to clear.
+    Returns steps (head cells) and eats (step indices of meals). Stops early only if trapped.
+    """
     food = {k for k, v in cells.items() if v[1] > 0}
-    pos, steps, eats = start, [start], []
-    if pos in food:
-        food.discard(pos)
+    steps, eats = [start], []
+    if start in food:
+        food.discard(start)
         eats.append(0)
-    while food:
-        prev = {pos: None}
-        q = deque([pos])
-        hit = None
+
+    def body_len():
+        return min(START_LEN + len(eats), MAX_LEN)
+
+    def blocked():
+        # the drawn body spans body_len() steps behind the head, i.e. body_len() + 1 cells
+        return set(steps[-(body_len() + 1):])
+
+    def nbrs(cell):
+        c, r = cell
+        return [n for n in ((c, r - 1), (c + 1, r), (c, r + 1), (c - 1, r)) if n in cells]
+
+    def room(cell, wall):
+        seen, q = {cell}, deque([cell])
+        while q:
+            for n in nbrs(q.popleft()):
+                if n not in seen and n not in wall:
+                    seen.add(n)
+                    q.append(n)
+        return len(seen)
+
+    def first_step_to_food(head, wall):
+        prev, q = {head: None}, deque([head])
         while q:
             cur = q.popleft()
-            if cur in food:
-                hit = cur
-                break
-            c, r = cur
-            for nxt in ((c, r - 1), (c + 1, r), (c, r + 1), (c - 1, r)):
-                if nxt in cells and nxt not in prev:
-                    prev[nxt] = cur
-                    q.append(nxt)
-        path = []
-        while hit != pos:
-            path.append(hit)
-            hit = prev[hit]
-        steps += path[::-1]
-        pos = steps[-1]
-        food.discard(pos)
-        eats.append(len(steps) - 1)
+            if cur in food and cur != head:
+                while prev[cur] != head:
+                    cur = prev[cur]
+                return cur
+            for n in nbrs(cur):
+                if n not in prev and n not in wall:
+                    prev[n] = cur
+                    q.append(n)
+        return None
+
+    def can_reach_tail(m):
+        """After moving to m, can the head still get back to its own tail? Then it can never be trapped."""
+        n = min(START_LEN + len(eats) + (m in food), MAX_LEN)
+        body = (steps + [m])[-(n + 1):]
+        tail, wall = body[0], set(body[1:-1])
+        if len(steps) + 1 <= n + 1:  # still unrolling: the tail isn't moving yet, so it needs open space
+            return room(m, set(body[:-1])) >= n + 2
+        if m == tail:
+            return True
+        seen, q = {m}, deque([m])
+        while q:
+            cur = q.popleft()
+            for nb in nbrs(cur):
+                if nb == tail:
+                    return True
+                if nb not in seen and nb not in wall:
+                    seen.add(nb)
+                    q.append(nb)
+        return False
+
+    limit = 40 * len(cells)
+    while food and len(steps) < limit:
+        head, wall = steps[-1], blocked()
+        moves = [n for n in nbrs(head) if n not in wall]
+        if not moves:
+            break  # trapped: the run ends here
+        wanted = first_step_to_food(head, wall)
+        safe = [m for m in moves if can_reach_tail(m)]
+        stalled = len(steps) - (eats[-1] if eats else 0) > 2 * len(cells)
+        if wanted in safe or (stalled and wanted):  # long stall: go for it (still never into the body)
+            nxt = wanted
+        elif safe:  # chase the tail until a meal is safely reachable, drifting towards food
+            nxt = min(safe, key=lambda m: min(abs(m[0] - f[0]) + abs(m[1] - f[1]) for f in food))
+        else:
+            nxt = max(moves, key=lambda m: room(m, wall))
+        steps.append(nxt)
+        if nxt in food:
+            food.discard(nxt)
+            eats.append(len(steps) - 1)
     return steps, eats
+
+
+def check_no_overlap(steps, eats):
+    """Every frame: the body's cells (head back body-length steps) must all be distinct."""
+    meals = 0
+    for i in range(len(steps)):
+        while meals < len(eats) and eats[meals] <= i:
+            meals += 1
+        n = min(START_LEN + meals, MAX_LEN)
+        window = steps[max(0, i - n):i + 1]
+        assert len(set(window)) == len(window), f"snake crosses itself at step {i}"
 
 
 def centre(cell):
@@ -119,7 +188,7 @@ def render(P, cal, cells, steps, eats):
     for (c, r), (_, n, lv) in sorted(cells.items()):
         x, y = X0 + c * PITCH, Y0 + r * PITCH
         anim = ""
-        if n > 0:
+        if (c, r) in eat_at:  # a trapped run can leave a few days uneaten; those stay green
             u = eat_at[(c, r)] / cycle
             anim = (f'<animate attributeName="fill" calcMode="discrete" values="{greens[lv]};{greens[0]}" '
                     f'keyTimes="0;{u:.5f}" dur="{f(cycle)}s" repeatCount="indefinite"/>')
@@ -172,6 +241,10 @@ if __name__ == "__main__":
         cal = fetch(os.environ["GITHUB_TOKEN"])
     cells = grid(cal)
     steps, eats = route(cells, (0, 3) if (0, 3) in cells else min(cells))
+    check_no_overlap(steps, eats)
+    left = sum(1 for v in cells.values() if v[1] > 0) - len(eats)
+    if left:
+        print(f"note: snake trapped with {left} days uneaten")
     for P in (LIGHT, DARK):
         svg = render(P, cal, cells, steps, eats)
         (dist / f"snake-{P['name']}.svg").write_text(svg, encoding="utf-8")
