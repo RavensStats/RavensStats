@@ -61,10 +61,7 @@ cards below show what each project does. Demos and code walk-throughs are availa
 - Public code, figure data and a reproduction guide; companion private work solves for self-similar blowup profiles.
 </details>
 
-<a href="https://ravensstats.github.io/RavensStats/"><picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/RavensStats/RavensStats/output/snake-dark.svg">
-  <img alt="Contribution snake: a snake crawls over the last year of GitHub contributions, eating each day with a commit and growing longer with every one." src="https://raw.githubusercontent.com/RavensStats/RavensStats/output/snake-light.svg" width="100%">
-</picture></a>
+<a href="https://ravensstats.github.io/RavensStats/"><picture> <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/RavensStats/RavensStats/output/snake-dark.svg"> <img alt="Contribution snake: a snake crawls over the last year of GitHub contributions, eating each day with a commit and growing longer with every one." src="https://raw.githubusercontent.com/RavensStats/RavensStats/output/snake-light.svg" width="100%"> </picture></a>
 
 <p align="center"><a href="https://ravensstats.github.io/RavensStats/"><img alt="Play Contribution Snake in your browser" src="https://img.shields.io/badge/%E2%96%B6%20PLAY-Contribution%20Snake-8250df?style=for-the-badge"></a></p>
 
