@@ -189,24 +189,36 @@ def survivors(P):
         ex, ey = cx + 30 * math.cos(a), cy + 30 * math.sin(a)
         b = f(-r() * dur)
         col = P[["red", "violet", "pink"][k % 3]]
-        out.append(f'<circle r="{f(3.5 + r() * 2.5)}" fill="{col}">'
+        out.append(f'<circle r="{f(3.5 + r() * 2.5)}" fill="{col}">'  # mythic horde
                    f'<animateMotion dur="{dur}s" begin="{b}s" repeatCount="indefinite" path="M{f(sx)} {f(sy)} L{f(ex)} {f(ey)}"/>'
                    f'<animate attributeName="opacity" dur="{dur}s" begin="{b}s" repeatCount="indefinite" '
                    f'values="0;1;1;0" keyTimes="0;.15;.9;1"/></circle>'
                    f'<path d="M0 -4 L3 0 L0 4 L-3 0z" fill="{P["green"]}" transform="translate({f(ex)} {f(ey)})">'
                    f'<animate attributeName="opacity" dur="{dur}s" begin="{b}s" repeatCount="indefinite" '
                    f'values="0;0;1;0" keyTimes="0;.9;.93;1"/></path>')
-    orb = "".join(f'<circle cx="{f(cx + 24 * math.cos(k * 2.094))}" cy="{f(cy + 24 * math.sin(k * 2.094))}" r="4" '
-                  f'fill="{P["cyan"]}"/>' for k in range(3))
+    # forged blades orbiting the smith, plus a few rising embers
+    orb = "".join(f'<path d="M0 -3 L12 0 L0 3z" fill="{P["amber"]}" '
+                  f'transform="translate({f(cx + 24 * math.cos(k * 2.094))} {f(cy + 24 * math.sin(k * 2.094))}) '
+                  f'rotate({f(math.degrees(k * 2.094) + 90)})"/>' for k in range(3))
     out.append(f'<g>{orb}<animateTransform attributeName="transform" type="rotate" from="0 {cx} {cy}" '
                f'to="360 {cx} {cy}" dur="1.1s" repeatCount="indefinite"/></g>')
-    out.append(f'<rect x="{cx - 7}" y="{cy - 7}" width="14" height="14" rx="3" fill="{P["amber"]}"/>')
+    for k in range(6):
+        ex = cx - 10 + k * 4
+        out.append(f'<circle cx="{ex}" cy="{cy}" r="1.6" fill="{P["amber"]}" class="em" '
+                   f'style="animation-delay:{f(k * .25)}s"/>')
+    out.append(f'<path d="M{cx - 9} {cy + 2} h18 l-3 5 h-12z M{cx - 4} {cy + 7} h8 v4 h-8z" fill="{P["muted"]}"/>'
+               f'<g transform="translate({cx} {cy - 4})"><g class="ham"><rect x="-1.2" y="-12" width="2.4" height="12" '
+               f'fill="{P["muted"]}"/><rect x="-6" y="-16" width="12" height="6" rx="1" fill="{P["amber"]}"/></g></g>')
     css = (".aura{transform-box:fill-box;transform-origin:center;animation:au 1.5s ease-in-out infinite}"
-           "@keyframes au{50%{transform:scale(1.15)}}")
-    return tile(P, "SurvivorsLikeGame", "Survivors-like",
-                "My take on the bullet-heaven genre: hordes, auto-attacks, builds", True,
-                "Animation: enemies converge on the hero from every side and pop into XP gems against orbiting "
-                "projectiles.", "".join(out), css)
+           "@keyframes au{50%{transform:scale(1.15)}}"
+           ".ham{transform-origin:0 0;animation:hm .55s ease-in infinite}@keyframes hm{0%{transform:rotate(-40deg)}"
+           "70%{transform:rotate(25deg)}100%{transform:rotate(-40deg)}}"
+           ".em{animation:em 1.5s ease-out infinite}@keyframes em{0%{opacity:0;transform:none}"
+           "20%{opacity:1}100%{opacity:0;transform:translateY(-26px)}}")
+    return tile(P, "Hephaestus Protocol", "Hephaestus Protocol",
+                "Mythic bullet-heaven roguelike: forge weapons mid-battle", "steam",
+                "Animation: a smith hammers at an anvil while forged blades orbit and mythic hordes converge and "
+                "pop into XP gems.", "".join(out), css)
 
 
 # ---------------------------------------------------------------- Candy Kings
@@ -248,7 +260,7 @@ def candy(P):
            ".cf{opacity:0;animation:cf 3s ease-out infinite}"
            "@keyframes cf{0%,54%{opacity:0;transform:translate(0,0)}56%{opacity:1}85%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(180deg)}100%{opacity:0}}")
     return tile(P, "Candy Kings", "Candy Kings",
-                "Couch game: feed the other army sweets until they pop", True,
+                "Couch co-op game: feed the other army sweets until they pop", True,
                 "Animation: a purple candy army and a pink unicorn army face off; a thrown sweet inflates an enemy "
                 "until it pops into confetti.", "".join(out), css)
 
@@ -259,40 +271,44 @@ def rosviz(P):
     grid = "".join(f'<line x1="{x}" y1="12" x2="{x}" y2="136"/>' for x in range(30, 226, 18)) + \
         "".join(f'<line x1="12" y1="{y}" x2="226" y2="{y}"/>' for y in range(30, 136, 18))
     out.append(f'<g stroke="{P["faint"]}">{grid}</g>')
-    out.append(f'<g fill="{P["muted"]}" fill-opacity=".55"><rect x="70" y="40" width="10" height="56"/>'
-               f'<rect x="140" y="80" width="56" height="10"/><rect x="150" y="30" width="10" height="26"/></g>')
-    route = "M40 116 L40 34 L120 34 L120 110 L200 110 L200 64 L172 64 L172 116 Z"
+    # 10 s story: the robot drives at a wall, the monitor warns, goes critical and auto-stops it,
+    # then the alert clears and it re-plans around the obstacle.
+    out.append(f'<rect x="152" y="82" width="9" height="54" fill="{P["muted"]}" fill-opacity=".6"/>'
+               f'<rect x="80" y="56" width="9" height="34" fill="{P["muted"]}" fill-opacity=".6"/>'
+               f'<rect x="184" y="30" width="30" height="9" fill="{P["muted"]}" fill-opacity=".6"/>')
+    route = "M30 110 L136 110 L136 40 L40 40 L30 110"
+    stop = 106 / (106 + 70 + 96 + math.hypot(10, 70))  # fraction of the route where it halts
     out.append(f'<path d="{route}" fill="none" stroke="{P["green"]}" stroke-opacity=".35" stroke-dasharray="3 3"/>')
-    rays = "".join(f'<line x1="0" y1="0" x2="{f(36 * math.cos(math.radians(a)))}" y2="{f(36 * math.sin(math.radians(a)))}"/>'
-                   for a in range(-60, 61, 12))
-    out.append(f'<g><g stroke="{P["red"]}" stroke-opacity=".45">{rays}<animateTransform attributeName="transform" '
-               f'type="rotate" values="-25;25;-25" dur="1.2s" repeatCount="indefinite"/></g>'
+    rays = "".join(f'<line x1="0" y1="0" x2="{f(30 * math.cos(math.radians(a)))}" y2="{f(30 * math.sin(math.radians(a)))}"/>'
+                   for a in range(-50, 51, 10))
+    kp, kt = f"0;{f(stop)};{f(stop)};1", ".0;.32;.58;1"
+    out.append(f'<g><g stroke="{P["cyan"]}" stroke-opacity=".5" class="ray">{rays}<animateTransform attributeName="transform" '
+               f'type="rotate" values="-20;20;-20" dur="1.2s" repeatCount="indefinite"/></g>'
+               f'<circle r="11" fill="none" stroke="{P["red"]}" stroke-width="2.5" class="halt"/>'
                f'<circle r="7" fill="{P["blue"]}"/><path d="M2 -3 L7 0 L2 3z" fill="{P["card"]}"/>'
-               f'<animateMotion dur="12s" repeatCount="indefinite" path="{route}" rotate="auto"/></g>')
-    out.append(text(18, 130, "/scan  /odom", P, 8.5, "muted", "m"))
+               f'<animateMotion dur="10s" repeatCount="indefinite" path="{route}" rotate="auto" keyPoints="{kp}" '
+               f'keyTimes="{kt}" calcMode="linear"/></g>')
+    out.append(text(18, 130, "/scan  /odom  /imu", P, 8.5, "muted", "m"))
     px = 236
-    out.append(text(px, 46, "battery_state", P, 9, "muted", "m")
-               + f'<rect x="{px}" y="52" width="160" height="8" rx="4" fill="{P["faint"]}"/>'
-               f'<rect x="{px}" y="52" width="160" height="8" rx="4" fill="{P["green"]}">'
-               f'<animate attributeName="width" values="160;40;160" keyTimes="0;.95;1" dur="12s" repeatCount="indefinite"/>'
-               f'<animate attributeName="fill" values="{P["green"]};{P["green"]};{P["amber"]};{P["green"]}" '
-               f'keyTimes="0;.6;.75;1" dur="12s" repeatCount="indefinite"/></rect>')
-    r = rng(4)
-    spark = [(px + k * 4, 94 - 12 * math.sin(k / 3) - r() * 8) for k in range(81)]
-    out.append(text(px, 74, "cmd_vel", P, 9, "muted", "m")
-               + f'<clipPath id="sp"><rect x="{px}" y="76" width="160" height="34"/></clipPath>'
-               f'<g clip-path="url(#sp)"><path d="{polyline(spark)}" fill="none" stroke="{P["blue"]}" stroke-width="1.6">'
-               f'<animateTransform attributeName="transform" type="translate" from="0 0" to="-160 0" dur="5s" '
-               f'repeatCount="indefinite"/></path></g>')
-    out.append(text(px, 118, "alerts", P, 9, "muted", "m")
-               + f'<g class="al"><rect x="{px}" y="122" width="160" height="18" rx="4" fill="{P["amber"]}" '
-               f'fill-opacity=".16" stroke="{P["amber"]}"/>' + text(px + 8, 135, "WARN  low battery", P, 9.5, "amber", "m")
-               + "</g>")
-    css = ".al{opacity:0;animation:al 12s infinite}@keyframes al{0%,62%{opacity:0;transform:translateX(12px)}66%,94%{opacity:1;transform:none}100%{opacity:0}}"
+    out.append(text(px, 46, "safety monitor", P, 9, "muted", "m", weight="600"))
+    rows = [("w", "amber", "WARN  collision_fwd"), ("c", "red", "CRIT  collision_fwd"),
+            ("s", "red", "AUTO-STOP  /cmd_vel = 0"), ("k", "green", "OK    alert cleared")]
+    for i, (cls, col, lab) in enumerate(rows):
+        y = 52 + i * 20
+        out.append(f'<g class="r{cls}"><rect x="{px}" y="{y}" width="162" height="16" rx="4" fill="{P[col]}" '
+                   f'fill-opacity=".14" stroke="{P[col]}" stroke-opacity=".7"/>'
+                   + text(px + 7, y + 11.5, lab, P, 9, col, "m") + "</g>")
+    out.append(text(px, 140, "→ dashboard · Prometheus · Grafana", P, 8.5, "muted", "m"))
+    T = "10s infinite"
+    css = (f".rw{{animation:rw {T}}}@keyframes rw{{0%,22%{{opacity:0}}25%,92%{{opacity:1}}97%,100%{{opacity:0}}}}"
+           f".rc{{animation:rc {T}}}@keyframes rc{{0%,29%{{opacity:0}}31%,92%{{opacity:1}}97%,100%{{opacity:0}}}}"
+           f".rs{{animation:rs {T}}}@keyframes rs{{0%,32%{{opacity:0}}34%,92%{{opacity:1}}97%,100%{{opacity:0}}}}"
+           f".rk{{animation:rk {T}}}@keyframes rk{{0%,56%{{opacity:0}}59%,92%{{opacity:1}}97%,100%{{opacity:0}}}}"
+           f".halt{{opacity:0;animation:ht {T}}}@keyframes ht{{0%,31%{{opacity:0}}33%,56%{{opacity:1}}59%,100%{{opacity:0}}}}")
     return tile(P, "ROSViz Web", "ROSViz Web",
-                "Team project: live web dashboard for ROS 2 robots", False,
-                "Animation: a robot drives a route on a map with a sweeping lidar fan, beside live battery, velocity "
-                "and alert panels.", "".join(out), css)
+                "Automated ROS 2 safety monitor + live dashboard integration", False,
+                "Animation: a robot drives at a wall; the safety monitor warns, goes critical and auto-stops it, then "
+                "clears the alert as it re-plans, with alerts streamed to the dashboard and Grafana.", "".join(out), css)
 
 
 # ---------------------------------------------------------------- fantasy league pages
@@ -328,5 +344,5 @@ def fantasy(P):
 
 
 CARDS = {"tiles/thesis": thesis, "tiles/final-platform": final_platform, "tiles/battleblips": battleblips,
-         "tiles/doodle-coaster": doodle, "tiles/survivors": survivors, "tiles/candy-kings": candy,
+         "tiles/doodle-coaster": doodle, "tiles/hephaestus-protocol": survivors, "tiles/candy-kings": candy,
          "tiles/rosviz": rosviz, "tiles/fantasy": fantasy}

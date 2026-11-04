@@ -10,10 +10,10 @@ DATA = Path(__file__).resolve().parent / "data"
 
 # ---------------------------------------------------------------- banner
 TAGLINES = [
-    "AI researcher · MSc thesis on long-context LLM inference",
-    "Quantum computing · error-corrected circuits",
-    "Energy professional · 10+ years in US gas & electric utilities",
-    "Builder · robotics, scientific computing and games",
+    "Energy & technology professional · 10+ years in US utilities",
+    "Data & business analyst · software developer · test manager",
+    "AI research · MSc thesis on long-context LLM inference",
+    "Robotics & quantum computing research",
 ]
 
 
@@ -42,18 +42,18 @@ def banner(P):
     n = len(TAGLINES)
     for i, t in enumerate(TAGLINES):
         tags.append(f'<g class="tg" style="animation-delay:{i * 3}s">'
-                    + text(42, 168, "› " + t, P, 16, "ink", "m") + "</g>")
+                    + text(42, 168, "› " + t, P, 15, "ink", "m") + "</g>")
     css = (f".nd{{animation:nd 3s ease-in-out infinite}}@keyframes nd{{0%,100%{{opacity:.35}}50%{{opacity:1}}}}"
            f".tg{{opacity:0;animation:tg {3 * n}s infinite}}"
            f"@keyframes tg{{0%{{opacity:0;transform:translateY(6px)}}3%,22%{{opacity:1;transform:none}}"
            f"25%,100%{{opacity:0;transform:translateY(-6px)}}}}")
     body = ("".join(waves) + "".join(edges) + "".join(nodes)
-            + f'<rect x="20" y="138" width="530" height="44" rx="10" fill="{P["card"]}" fill-opacity=".85"/>'
+            + f'<rect x="20" y="138" width="560" height="44" rx="10" fill="{P["card"]}" fill-opacity=".85"/>'
             + text(40, 82, "Andrew Mullen", P, 46, "ink", weight="800", extra=' letter-spacing="-.5"')
-            + text(42, 112, "@RavensStats  ·  research · energy · quantum · games", P, 13, "muted", "m")
+            + text(42, 112, "@RavensStats  ·  energy · data · AI · robotics · quantum", P, 13, "muted", "m")
             + "".join(tags))
-    return doc(w, h, P, "Andrew Mullen", "Banner: Andrew Mullen, AI researcher, quantum computing, "
-               "energy professional with 10+ years in US gas and electric utilities, builder.", body, css)
+    return doc(w, h, P, "Andrew Mullen", "Banner: Andrew Mullen, energy and technology professional with 10+ years in "
+               "US utilities; data and business analyst, software developer, test manager; AI, robotics and quantum research.", body, css)
 
 
 # ---------------------------------------------------------------- drone swarm (real sim data)

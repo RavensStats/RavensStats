@@ -71,9 +71,13 @@ def chips(x, y, labels, P, size=11):
     return "".join(out)
 
 
-def badge(x, y, private, P):
-    lab, col = ("PRIVATE REPO", "amber") if private else ("PUBLIC REPO", "green")
+def badge(x, y, private, P, right=False):
+    """private: True / False, or "steam" for a released game. right=True: x is the right edge."""
+    lab, col = {True: ("PRIVATE REPO", "amber"), False: ("PUBLIC REPO", "green"),
+                "steam": ("ON STEAM", "blue")}[private]
     w = len(lab) * 6.3 + 24
+    if right:
+        x -= w
     return (f'<rect x="{f(x)}" y="{f(y)}" width="{f(w)}" height="18" rx="9" fill="{P["card"]}" '
             f'stroke="{P[col]}" stroke-opacity=".6"/>'
             f'<circle cx="{f(x + 10)}" cy="{f(y + 9)}" r="3" fill="{P[col]}"/>'
@@ -104,7 +108,7 @@ def tile_frame(P, title, sub, private, body, w=410, h=200):
             f'<line x1="1" y1="146" x2="{w - 1}" y2="146" stroke="{P["line"]}"/>'
             + text(18, 172, title, P, 15, "ink", weight="700")
             + text(18, 190, sub, P, 11.5, "muted")
-            + badge(w - 118, 12, private, P))
+            + badge(w - 12, 12, private, P, right=True))
 
 
 def polyline(pts):
