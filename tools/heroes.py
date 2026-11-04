@@ -369,5 +369,25 @@ def voice(P):
                "the snow resolves from noise, turns to night and gains a deer.", left + "".join(out), css)
 
 
+# ---------------------------------------------------------------- Linear A (frame for the demo-video GIF)
+VIDEO_BOX = (420, 25, 400, 250)  # where build_linear_a.py composites the recording
+
+
+def linear_a(P):
+    x, y, w, h = VIDEO_BOX
+    left = hero_text(
+        P, "AI · COMPUTER VISION · ANCIENT SCRIPTS", ["Linear A", "Tablet Reader"],
+        "Upload a Minoan tablet drawing: a detector and classifier box the signs, propose readings "
+        "and check the fractions against the KU-RO total. Linear A is undeciphered, so it reads "
+        "signs and sums, not prose.",
+        ["Python", "FastAPI", "YOLO", "Vue"],
+        "real demo recording · Rikoleurt/ASE_Group3", "amber", False)
+    frame = (f'<rect x="{x - 1}" y="{y - 1}" width="{w + 2}" height="{h + 2}" rx="10" fill="{P["bg"]}" '
+             f'stroke="{P["line"]}"/>')
+    return doc(840, 300, P, "Linear A Tablet Reader",
+               "Demo recording of the Linear A Tablet Reader: a tablet drawing is uploaded, signs are boxed and "
+               "read, and the fraction check compares the entries with the KU-RO total.", left + frame)
+
+
 CARDS = {"banner": banner, "hero/drone": drone, "hero/navier-stokes": navier,
          "hero/quantum": quantum, "hero/voice2vision": voice}

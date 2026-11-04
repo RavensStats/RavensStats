@@ -49,6 +49,18 @@ cards below show what each project does. Demos and code walk-throughs are availa
 - A sibling tool, Voice to UI, builds working UI prototypes by voice and exports them as HTML.
 </details>
 
+<a href="https://github.com/Rikoleurt/ASE_Group3"><picture> <source media="(prefers-color-scheme: dark)" srcset="assets/hero/linear-a-dark.gif"> <img alt="Linear A Tablet Reader: demo recording in which a Minoan tablet drawing is uploaded, its signs are boxed and read, and the fraction check compares the entries with the KU-RO total." src="assets/hero/linear-a-light.gif" width="100%"> </picture></a>
+
+<details><summary><b>Linear A Tablet Reader</b> · <a href="https://github.com/Rikoleurt/ASE_Group3">ASE_Group3</a> · what it is · full-resolution demo</summary>
+
+- Upload a Linear A tablet drawing: a sign detector and a classifier (YOLO) locate the signs and propose readings, with hover details for each sign.
+- Quantities and fractions are interpreted and checked against the KU-RO ("total") entry, showing whether the tablet's arithmetic balances.
+- Vue frontend, FastAPI backend and a corpus-based reading view; Linear A is undeciphered, so the app reads signs and arithmetic, not language.
+
+https://github.com/user-attachments/assets/a9dcaa56-567a-4865-9641-fb5758889c16
+
+</details>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/hero/navier-stokes-dark.svg">
   <img alt="Navier–Stokes collapse: animated chart of measured non-axisymmetric growth rates on Hou's collapsing Navier–Stokes state for two viscosities and modes m = 0, 1, 2, drawn from the paper's figure data, beside a schematic collapsing swirl." src="assets/hero/navier-stokes-light.svg" width="100%">
