@@ -107,6 +107,30 @@ https://github.com/user-attachments/assets/a9dcaa56-567a-4865-9641-fb5758889c16
 <tr>
 <td><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/proth-prime-search-dark.svg"><img alt="Proth Prime Search: the first 240 odd k of k·2^332,200,000 + 1 on a grid; waves of primes q = 3, 5, 7, … knock out every k with that factor, using the project's real sieve data, until the 10 true survivors remain glowing." src="assets/tiles/proth-prime-search-light.svg" width="100%"></picture>
 <br><sub>Research · C · Python · Oracle Cloud · private</sub></td>
+<td><a href="https://github.com/MateoLopez00/SafeSplit_Distributed_DL"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/backdoor-robustness-dark.svg"><img alt="Backdoor attacks and defences: four clients send activations through a U-shaped split model (client head, server backbone, client tail); one client's image carries a red trigger patch, its checkpoint is flagged suspicious and rolled back to the last benign one, and the client gets a low-trust flag. Numbers are SafeSplit's backdoor accuracy without vs with the defence, from the reproduction's README." src="assets/tiles/backdoor-robustness-light.svg" width="100%"></picture></a>
+<br><sub>Research · group projects · <a href="https://github.com/MateoLopez00/SafeSplit_Distributed_DL">SafeSplit reproduction</a> (NDSS 2025) · <a href="https://github.com/MateoLopez00/DL-Backdoor-Attacks-and-Robustness-in-Training">DL course project</a> · Python · PyTorch · CIFAR-10</sub></td>
+</tr>
+<tr>
+<td><a href="https://github.com/RavensStats/PokemonRedExperiments"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/pokemon-red-rl-dark.svg"><img alt="Pokémon Red RL experiments: an agent explores a tile map while a coverage heat map fills in behind it, story-event, battle and heal rewards pop as it reaches them, and the coverage bar and shaped-reward curve rise." src="assets/tiles/pokemon-red-rl-light.svg" width="100%"></picture></a>
+<br><sub>Research · <a href="https://github.com/RavensStats/PokemonRedExperiments">PokemonRedExperiments</a> (fork of PWhiddy's) · Python · PyBoy · Stable-Baselines3 PPO</sub></td>
+<td><a href="https://github.com/rachelyongies/diffusion_model_quantization"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/diffusion-quantization-dark.svg"><img alt="Diffusion model quantization: a picture denoises out of random noise four times, as FP16, INT8, INT4 and INT8 with fewer steps, while a histogram of UNet activations stays smooth at 8 bits and snaps onto 16 levels at 4 bits. The table gives the notebook's measured seconds per image and CLIPScore for each mode: fake quantization alone is slower than FP16, INT4 loses quality, and cutting to 20 steps gives a 27 % latency cut." src="assets/tiles/diffusion-quantization-light.svg" width="100%"></picture></a>
+<br><sub>Research · <a href="https://github.com/rachelyongies/diffusion_model_quantization">diffusion_model_quantization</a> · group project · Python · PyTorch · diffusers</sub></td>
+</tr>
+<tr>
+<td><a href="https://github.com/RavensStats/2D-Escape-Room"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/escape-room-dark.svg"><img alt="Escape Room: in a bedroom scene a cursor reads a note, sets a four-slider light puzzle to its solution, finds two key parts in a drawer and under the bed, combines them into a key and unlocks the door." src="assets/tiles/escape-room-light.svg" width="100%"></picture></a>
+<br><sub>Game · Unity 6 · C# · group project · <a href="https://github.com/RavensStats/2D-Escape-Room">2D-Escape-Room</a> · <a href="https://github.com/RavensStats/Escape-Room">3D prototype</a></sub></td>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/classic-games-dark.svg"><img alt="Classic Games: a spinning disc streams into a Windows 10/11 window, compatibility fixes tick off one by one (proxy DLL hooks, no-CD, DirectDraw, AVI video, window scaling) and an abstract answer-the-sum shooter starts running." src="assets/tiles/classic-games-light.svg" width="100%"></picture>
+<br><sub>Retro · C · Win32 · proxy DLLs · PowerShell · private</sub></td>
+</tr>
+<tr>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/heroclix-manual-dark.svg"><img alt="HeroClix Manual: on a square-grid map a figure moves three squares, traces a line of fire to an enemy, rolls 2d6 against its defense and hits, and the target's combat dial clicks twice as its values drop." src="assets/tiles/heroclix-manual-light.svg" width="100%"></picture>
+<br><sub>Game · Unity 6 · C# · PHP/MySQL server · Python scraper · private</sub></td>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/tictactoe-evolved-dark.svg"><img alt="Tic Tac Toe Evolved: one board plays through four of the game's eight modes in turn: Classic (X wins the top row), Gravity (marks drop to the column floor), Quantum (older marks fade and each player's fourth mark erases their oldest) and Expansion (a new column grows after each move), while the mode list highlights the active variant." src="assets/tiles/tictactoe-evolved-light.svg" width="100%"></picture>
+<br><sub>Game · Unity 6 · C# · private</sub></td>
+</tr>
+<tr>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/guess-who-dark.svg"><img alt="Guess Who: a board of 24 abstract face cards; yes/no questions about hats, glasses, beards and hair flip the non-matching cards down one question at a time until a single card is left and the guess is right." src="assets/tiles/guess-who-light.svg" width="100%"></picture>
+<br><sub>Game · Unity 6 · C# · Python scraper · private</sub></td>
 <td></td>
 </tr>
 </table>
