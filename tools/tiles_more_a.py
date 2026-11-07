@@ -186,7 +186,7 @@ def escape_room(P):
                    f'class="ck{i}">' + _attr(D, "r", [(0, 2), (t, 2), (t + .04, 9), (1, 9)]) + "</circle>")
         css.append(_fade(f"ck{i}", D, [(0, 0), (t, 0), (t + .005, 1), (t + .04, 0), (1, 0)]))
     return tile(P, "Escape Room", "Escape Room",
-                "GameDev group project: a 2D point-and-click escape room", False,
+                "A 2D point-and-click escape room, built in Unity", False,
                 "Animation: in a bedroom scene a cursor reads a note, sets a four-slider light puzzle to its "
                 "solution, finds two key parts in a drawer and under the bed, combines them into a key and "
                 "unlocks the door.", _inject("".join(out), smil), "".join(css))

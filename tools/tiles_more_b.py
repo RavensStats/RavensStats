@@ -261,7 +261,7 @@ def guess_who(P):
         out.append(text(298, 140, f"{n} card{'s' if n != 1 else ''} left", P, 10, "amber" if n == 1 else "muted",
                         f"m n{i}", "600"))
     return tile(P, "Guess Who", "Guess Who",
-                "Seeded boards with share codes; faces from a wiki scraper", True,
+                "Seeded boards with share codes; faces from a character wiki", True,
                 "Animation: a board of 24 abstract face cards; yes/no questions about hats, glasses, beards and hair "
                 "flip the non-matching cards down one question at a time until a single card is left and the guess "
                 "is right.", "".join(out), "".join(css))
@@ -343,7 +343,7 @@ def backdoor(P):
                + text(262, 140, "semantic", P, 9.5, "ink", "m") + text(398, 140, "100 → 0", P, 9.5, "green", "m",
                                                                          "600", "end"))
     return tile(P, "Backdoor attacks and defences", "Backdoor attacks and defences",
-                "Group projects: SafeSplit repro + CNN backdoor robustness", False,
+                "SafeSplit reproduction + CNN backdoor robustness", False,
                 "Animation: four clients send activations through a U-shaped split model (client head, server "
                 "backbone, client tail); one client's image carries a red trigger patch, its checkpoint is flagged "
                 "suspicious and rolled back to the last benign one, and the client gets a low-trust flag. Numbers "
@@ -448,7 +448,7 @@ def diffusion(P):
     out.append(text(274, 142, "fewer steps: −27 % latency", P, 9, "green", "m ft", "600"))
     css.append(_kf("ft", dur, _on(.75, "fill-opacity", .985), "fill-opacity:0;"))
     return tile(P, "Diffusion model quantization", "Diffusion model quantization",
-                "Group project: Q-Diffusion-style PTQ on Stable Diffusion 1.5", False,
+                "Q-Diffusion-style PTQ on Stable Diffusion 1.5", False,
                 "Animation: a picture denoises out of random noise four times, as FP16, INT8, INT4 and INT8 with "
                 "fewer steps, while a histogram of UNet activations stays smooth at 8 bits and snaps onto 16 levels "
                 "at 4 bits. The table gives the notebook's measured seconds per image and CLIPScore for each mode: "
