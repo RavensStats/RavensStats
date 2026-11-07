@@ -1,7 +1,11 @@
 """The 410x200 project tiles. Game tiles keep this frame so a GIF clip can replace them later."""
+import json
 import math
+from pathlib import Path
 
 from common import ACCENTS, doc, f, hexagon, polyline, rng, text, tile_frame
+
+DATA = Path(__file__).resolve().parent / "data"
 
 
 def tile(P, name, title, sub, private, desc, body, css=""):
@@ -343,6 +347,48 @@ def fantasy(P):
                 "".join(out), css)
 
 
+# ---------------------------------------------------------------- Proth Prime Search (real sieve data)
+def proth(P):
+    """First 240 odd k of k*2^332200000+1; each dot fades in the wave of its real smallest factor."""
+    cells = json.loads((DATA / "proth_sieve_small_k.json").read_text())["cells"]
+    waves = [("q = 3", lambda q: q == 3), ("q = 5", lambda q: q == 5), ("q = 7", lambda q: q == 7),
+             ("q = 11", lambda q: q == 11), ("q = 13", lambda q: q == 13), ("q ≤ 97", lambda q: 17 <= q <= 97),
+             ("q ≤ 10⁶", lambda q: 101 <= q <= 10 ** 6), ("q ≤ 8·10¹²", lambda q: q == -1)]
+    T, dur = [.06 + i * .075 for i in range(len(waves))], 12
+    dots = []
+    for i, (k, q) in enumerate(cells):
+        x, y = 18 + (i % 24) * 10.5, 32 + (i // 24) * 10.5
+        cls = "sv" if q == 0 else f"w{next(j for j, (_, hit) in enumerate(waves) if hit(q))}"
+        dots.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="3.4" class="{cls}"/>')
+    out = [text(18, 20, "k = 1, 3, 5 … 479", P, 9, "muted", "m"),
+           f'<g fill="{P["blue"]}">{"".join(dots)}</g>',
+           text(290, 50, "N = k·2ⁿ + 1", P, 10.5, "ink", "m", weight="600"),
+           text(290, 63, "n = 332,200,000", P, 9, "muted", "m")]
+    for i, (lab, _) in enumerate(waves):
+        out.append(f'<g class="l{i}">' + text(290, 84, "sieve " + lab, P, 10, "red", "m", weight="600") + "</g>")
+    out.append('<g class="ls">' + text(290, 84, "10 survive: prime?", P, 10, "amber", "m", weight="600") + "</g>")
+    out.append(text(290, 102, "all odd k < 10⁹:", P, 9, "muted", "m")
+               + text(290, 114, "500M → 15.3M left", P, 9, "ink", "m")
+               + text(290, 126, "P(prime) ≈ 3·10⁻⁷", P, 9, "muted", "m")
+               + text(290, 138, "≈ 4.3 primes in pool", P, 9, "muted", "m"))
+    pc = lambda x: f(x * 100)
+    css = [f".w{i}{{animation:w{i} {dur}s infinite}}@keyframes w{i}{{0%,{pc(t)}%{{fill-opacity:1}}"
+           f"{pc(t + .03)}%,95%{{fill-opacity:.1}}100%{{fill-opacity:1}}}}" for i, t in enumerate(T)]
+    css += [f".l{i}{{fill-opacity:0;animation:l{i} {dur}s infinite}}@keyframes l{i}{{0%,{pc(t - .03)}%{{fill-opacity:0}}"
+            f"{pc(t - .02)}%,{pc(t + .045)}%{{fill-opacity:1}}{pc(t + .055)}%,100%{{fill-opacity:0}}}}" for i, t in enumerate(T)]
+    css.append(f".ls{{fill-opacity:0;animation:ls {dur}s infinite}}@keyframes ls{{0%,64%{{fill-opacity:0}}"
+               f"66%,93%{{fill-opacity:1}}95%,100%{{fill-opacity:0}}}}"
+               f".sv{{transform-box:fill-box;transform-origin:center;animation:sv {dur}s infinite}}"
+               f"@keyframes sv{{0%,64%{{fill:{P['blue']};transform:scale(1)}}68%{{fill:{P['amber']};transform:scale(1.6)}}"
+               f"74%,80%,86%{{fill:{P['amber']};transform:scale(1.2)}}77%,83%,89%{{fill:{P['amber']};transform:scale(1.6)}}"
+               f"93%{{fill:{P['amber']};transform:scale(1.2)}}97%,100%{{fill:{P['blue']};transform:scale(1)}}}}")
+    return tile(P, "Proth Prime Search", "Proth Prime Search",
+                "Sieving 500M candidates for a 100-million-digit prime", True,
+                "Animation: the first 240 odd k of k·2^332,200,000 + 1 on a grid. Waves of primes q = 3, 5, 7, … "
+                "knock out every k with that factor, using the project's real sieve data, until only the 10 true "
+                "survivors remain, glowing because their primality is still unknown.", "".join(out), "".join(css))
+
+
 CARDS = {"tiles/thesis": thesis, "tiles/final-platform": final_platform, "tiles/battleblips": battleblips,
          "tiles/doodle-coaster": doodle, "tiles/hephaestus-protocol": survivors, "tiles/candy-kings": candy,
-         "tiles/rosviz": rosviz, "tiles/fantasy": fantasy}
+         "tiles/rosviz": rosviz, "tiles/fantasy": fantasy, "tiles/proth-prime-search": proth}
