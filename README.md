@@ -123,7 +123,7 @@ https://github.com/user-attachments/assets/a9dcaa56-567a-4865-9641-fb5758889c16
 <br><sub>Retro · C · Win32 · proxy DLLs · PowerShell · private</sub></td>
 </tr>
 <tr>
-<td><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/heroclix-manual-dark.svg"><img alt="HeroClix Manual: on a square-grid map a figure moves three squares, traces a line of fire to an enemy, rolls 2d6 against its defense and hits, and the target's combat dial clicks twice as its values drop." src="assets/tiles/heroclix-manual-light.svg" width="100%"></picture>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/heroclix-manual-dark.svg"><img alt="HeroClix: on a square-grid map a figure moves three squares, traces a line of fire to an enemy, rolls 2d6 against its defense and hits, and the target's combat dial clicks twice as its values drop." src="assets/tiles/heroclix-manual-light.svg" width="100%"></picture>
 <br><sub>Game · Unity 6 · C# · PHP/MySQL server · Python scraper · private</sub></td>
 <td><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/tictactoe-evolved-dark.svg"><img alt="Tic Tac Toe Evolved: one board plays through four of the game's eight modes in turn: Classic (X wins the top row), Gravity (marks drop to the column floor), Quantum (older marks fade and each player's fourth mark erases their oldest) and Expansion (a new column grows after each move), while the mode list highlights the active variant." src="assets/tiles/tictactoe-evolved-light.svg" width="100%"></picture>
 <br><sub>Game · Unity 6 · C# · private</sub></td>

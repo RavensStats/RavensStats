@@ -386,8 +386,8 @@ def heroclix(P):
     css.append(_fade("v0", D, [(0, 1), (.61, 1), (.615, 0), (.95, 0), (.96, 1), (1, 1)], base=1))
     css.append(_fade("v1", D, [(0, 0), (.61, 0), (.615, 1), (.65, 1), (.655, 0), (1, 0)]))
     css.append(_fade("v2", D, [(0, 0), (.65, 0), (.655, 1), (.95, 1), (.96, 0), (1, 0)]))
-    return tile(P, "HeroClix Manual", "HeroClix Manual",
-                "HeroClix in Unity: 13k scraped units, rules engine, online play", True,
+    return tile(P, "HeroClix", "HeroClix",
+                "HeroClix in Unity: 13k units, rules engine, online play", True,
                 "Animation: on a square-grid map a figure moves three squares, traces a line of fire to an enemy, "
                 "rolls 2d6 against its defense and hits, and the target's combat dial clicks twice as its values drop.",
                 _inject("".join(out), smil), "".join(css))
