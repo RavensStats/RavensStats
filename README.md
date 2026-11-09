@@ -14,6 +14,18 @@ cards below show what each project does. Demos and code walk-throughs are availa
 ## Research highlights
 
 <picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/hero/outage-risk-dark.svg">
+  <img alt="Outage risk from short outages: animated card. A schematic drone ignores its positioning fixes while the base stations keep sweeping, and its estimate drifts away from the reference. Beside it, real offline data from one public-dataset flight: 127 short 1 to 1.5 s outages build a ladder of drift measurements, a 3 s abort limit is predicted from them, and 5 of 51 held-out 3 s outages exceed it, against 49 of 51 for a simulator's limit. Below, the share of held-out outages beyond each abort limit on six public datasets (target 10 %)." src="assets/hero/outage-risk-light.svg" width="100%">
+</picture>
+
+<details><summary><b>Outage risk from short outages</b> · private · what it is</summary>
+
+- In flight the drone briefly stops passing its Lighthouse positioning to its estimator in flight while the positioning system keeps computing a reference from the same light, so drift (estimate − reference) is measured directly; a drone's own safe 1–1.5 s outages are used to predict its longer ones.
+- Hardware lab days with Crazyflies are under way; the method has already been replicated offline on six public flight datasets.
+- Offline, abort limits set from simulators with datasheet IMU noise are exceeded on 82–100 % of held-out 3 s outages (target 10 %), and with tracked-flight-fitted noise on 92–100 % for four of six datasets; limits from the drone's own short outages on 10–23 %.
+</details>
+
+<picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/hero/drone-dark.svg">
   <img alt="Self-maintaining drone swarm: animated top-down view of six simulated Crazyflie drones in a room swept by four Lighthouse base stations, taking turns to fly and land on chargers. Positions come from the project's own simulator." src="assets/hero/drone-light.svg" width="100%">
 </picture>
@@ -59,18 +71,6 @@ cards below show what each project does. Demos and code walk-throughs are availa
 
 https://github.com/user-attachments/assets/a9dcaa56-567a-4865-9641-fb5758889c16
 
-</details>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/hero/outage-risk-dark.svg">
-  <img alt="Outage risk from short outages: animated card. A schematic drone ignores its positioning fixes while the base stations keep sweeping, and its estimate drifts away from the reference. Beside it, real offline data from one public-dataset flight: 127 short 1 to 1.5 s outages build a ladder of drift measurements, a 3 s abort limit is predicted from them, and 5 of 51 held-out 3 s outages exceed it, against 49 of 51 for a simulator's limit. Below, the share of held-out outages beyond each abort limit on six public datasets (target 10 %)." src="assets/hero/outage-risk-light.svg" width="100%">
-</picture>
-
-<details><summary><b>Outage risk from short outages</b> · private · what it is</summary>
-
-- In flight the drone briefly stops passing its Lighthouse positioning to its estimator in flight while the positioning system keeps computing a reference from the same light, so drift (estimate − reference) is measured directly; a drone's own safe 1–1.5 s outages are used to predict its longer ones.
-- Hardware lab days with Crazyflies are under way; the method has already been replicated offline on six public flight datasets.
-- Offline, abort limits set from simulators with datasheet IMU noise are exceeded on 82–100 % of held-out 3 s outages (target 10 %), and with tracked-flight-fitted noise on 92–100 % for four of six datasets; limits from the drone's own short outages on 10–23 %.
 </details>
 
 <a href="https://ravensstats.github.io/RavensStats/"><picture> <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/RavensStats/RavensStats/output/snake-dark.svg"> <img alt="Contribution snake: a snake crawls over the last year of GitHub contributions, eating each day with a commit and growing longer with every one." src="https://raw.githubusercontent.com/RavensStats/RavensStats/output/snake-light.svg" width="100%"> </picture></a>
