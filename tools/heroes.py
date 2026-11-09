@@ -137,64 +137,152 @@ def drone(P):
                "own simulator.", left + "".join(out))
 
 
-# ---------------------------------------------------------------- Navier-Stokes (public figure data)
-def navier(P):
-    curves = json.load(open(DATA / "ns_curves.json"))
-    x0, x1, y0, y1 = 588.0, 812.0, 34.0, 226.0
-    X = lambda v: x0 + v / 36 * (x1 - x0)
-    Y = lambda v: y1 - (v + 2.2) / 4.6 * (y1 - y0)
-    cols = ["blue", "pink", "green", "violet"]
-    out = [f'<rect x="{x0}" y="{y0}" width="{x1 - x0}" height="{y1 - y0}" fill="{P["bg"]}" stroke="{P["line"]}"/>']
-    for v in (-2, -1, 1, 2):
-        out.append(f'<line x1="{x0}" x2="{x1}" y1="{f(Y(v))}" y2="{f(Y(v))}" stroke="{P["faint"]}"/>'
-                   + text(x0 - 5, Y(v) + 3, str(v), P, 9, "muted", "m", anchor="end"))
-    out.append(f'<line x1="{x0}" x2="{x1}" y1="{f(Y(0))}" y2="{f(Y(0))}" stroke="{P["muted"]}" '
-               f'stroke-dasharray="3 3"/>' + text(x0 - 5, Y(0) + 3, "0", P, 9, "muted", "m", anchor="end"))
-    for v in (0, 10, 20, 30):
-        out.append(text(X(v), y1 + 13, str(v), P, 9, "muted", "m", anchor="middle"))
-    out.append(text((x0 + x1) / 2, y1 + 27, "fraction of the remaining time (%)", P, 9.5, "muted", "m",
-                    anchor="middle"))
-    out.append(f'<text x="0" y="0" class="m" font-size="9.5" fill="{P["muted"]}" text-anchor="middle" '
-               f'transform="translate({f(x0 - 24)} {f((y0 + y1) / 2)}) rotate(-90)">amplitude rate σ(T−t)</text>')
-    for i, c in enumerate(curves):
-        pts = [(X(a), Y(b)) for a, b in c["pts"]]
-        out.append(f'<path d="{polyline(pts)}" pathLength="1" class="cv" style="animation-delay:{f(i * .35)}s" '
-                   f'fill="none" stroke="{P[cols[i]]}" stroke-width="2.2" stroke-linecap="round"/>')
-    lx = x0 - 30
-    for i, c in enumerate(curves):
-        xx = lx + (i % 2) * 130
-        yy = 274 + (i // 2) * 14
-        out.append(f'<line x1="{f(xx)}" x2="{f(xx + 14)}" y1="{f(yy - 3)}" y2="{f(yy - 3)}" '
-                   f'stroke="{P[cols[i]]}" stroke-width="2.2"/>'
-                   + text(xx + 19, yy, c["label"].replace("nu", "ν"), P, 9.5, "muted", "m"))
-    # schematic collapsing swirl
-    sx, sy = 486, 132
-    rings = []
-    for k in range(7):
-        col = P[["blue", "cyan", "violet", "pink", "amber", "red", "pink"][k]]
-        rings.append(f'<ellipse cx="{sx}" cy="{sy}" rx="44" ry="74" fill="none" stroke="{col}" '
-                     f'stroke-width="2" class="rg" style="animation-delay:{f(k * 0.5)}s"/>')
-    out.append("".join(rings) + f'<circle cx="{sx}" cy="{sy}" r="4" fill="{P["red"]}" class="core"/>'
-               + text(sx, 228, "collapsing front", P, 9.5, "muted", "m", anchor="middle")
-               + text(sx, 241, "(schematic)", P, 9.5, "muted", "m", anchor="middle"))
-    css = (".cv{stroke-dasharray:1;stroke-dashoffset:1;animation:dr 9s ease-in-out infinite both}"
-           "@keyframes dr{0%{stroke-dashoffset:1;opacity:1}38%{stroke-dashoffset:0}88%{stroke-dashoffset:0;opacity:1}"
-           "96%,100%{stroke-dashoffset:0;opacity:0}}"
-           ".rg{transform-box:fill-box;transform-origin:center;animation:rg 3.5s cubic-bezier(.5,0,.9,.6) infinite both}"
-           "@keyframes rg{0%{transform:scale(1);opacity:0}15%{opacity:.9}100%{transform:scale(.04);opacity:.2}}"
-           ".core{transform-box:fill-box;transform-origin:center;animation:co 1.75s ease-in-out infinite}"
-           "@keyframes co{0%,100%{transform:scale(.7)}50%{transform:scale(1.5)}}")
+# ---------------------------------------------------------------- outage risk from short outages (real offline drift data)
+def outage_risk(P):
+    d = json.load(open(DATA / "outage_risk_flight.json"))
+    T = 16  # seconds per loop
+    pc = lambda x: f(x * 100)
+    css = []
+
+    def show(name, t0, t1, end=.95):
+        """name fades in over t0..t1, holds, fades out over end..end+.03 (fractions of the loop)."""
+        css.append(f".{name}{{opacity:0;animation:{name} {T}s infinite}}@keyframes {name}{{0%,{pc(t0)}%{{opacity:0}}"
+                   f"{pc(t1)}%,{pc(end)}%{{opacity:1}}{pc(min(end + .03, 1))}%,100%{{opacity:0}}}}")
+
+    out = []
+    # ---- scene (schematic): two base stations, the drone (= the reference) and its own estimate
+    bs = [(446, 42), (558, 42)]
+    dx, dy = 502, 118
+    out.append(f'<rect x="432" y="26" width="140" height="170" rx="8" fill="{P["bg"]}" stroke="{P["line"]}"/>')
+    for x, y in bs:
+        out.append(f'<path d="M{x} {y} L{dx - 8} {dy + 5} L{dx + 8} {dy - 5}z" fill="{P["cyan"]}" class="bm"/>'
+                   f'<rect x="{x - 7}" y="{y - 6}" width="14" height="12" rx="3" fill="{P["cyan"]}"/>')
+    outs = [(.08, .14, (13, -9)), (.19, .25, (-12, 10)), (.30, .36, (11, 12)), (.54, .68, (-36, 30))]
+    # beams keep sweeping (the reference keeps coming); they dim while the drone ignores them
+    stops = ["0%{fill-opacity:.24}"]
+    for t0, t1, _ in outs:
+        stops.append(f"{pc(t0)}%{{fill-opacity:.24}}{pc(t0 + .01)}%,{pc(t1)}%{{fill-opacity:.06}}"
+                     f"{pc(t1 + .01)}%{{fill-opacity:.24}}")
+    css.append(f".bm{{animation:bm {T}s infinite}}@keyframes bm{{{''.join(stops)}100%{{fill-opacity:.24}}}}")
+    # the estimate drifts off during each outage and snaps back when fixes resume
+    kt, vals = ["0"], ["0 0"]
+    for t0, t1, (ex, ey) in outs:
+        kt += [f(t0), f(t1), f(t1 + .006)]
+        vals += ["0 0", f"{ex} {ey}", "0 0"]
+    kt.append("1")
+    vals.append("0 0")
+    splines = ";".join(["0 0 1 1", ".4 0 .9 .6", "0 0 1 1"] * len(outs) + ["0 0 1 1"])
+    est = (f'<g><circle cx="{dx}" cy="{dy}" r="10" fill="none" stroke="{P["amber"]}" stroke-width="2" '
+           f'stroke-dasharray="3 2"/><circle cx="{dx}" cy="{dy}" r="2.4" fill="{P["amber"]}"/>'
+           f'<animateTransform attributeName="transform" type="translate" dur="{T}s" repeatCount="indefinite" '
+           f'values="{";".join(vals)}" keyTimes="{";".join(kt)}" calcMode="spline" keySplines="{splines}"/></g>')
+    icon = "".join(f'<circle cx="{dx + sx * 9}" cy="{dy + sy * 9}" r="4.5" fill="none" stroke="{P["ink"]}" '
+                   f'stroke-width="1.4"/>' for sx in (-1, 1) for sy in (-1, 1))
+    icon += (f'<path d="M{dx - 9} {dy - 9} L{dx + 9} {dy + 9} M{dx + 9} {dy - 9} L{dx - 9} {dy + 9}" '
+             f'stroke="{P["ink"]}" stroke-width="2"/><circle cx="{dx}" cy="{dy}" r="3" fill="{P["ink"]}"/>')
+    line = "".join(f'<animate attributeName="{a}" dur="{T}s" repeatCount="indefinite" values="'
+                   + ";".join(f(c + float(v.split()[k])) for v in vals) + f'" keyTimes="{";".join(kt)}" '
+                   f'calcMode="spline" keySplines="{splines}"/>' for a, c, k in (("x2", dx, 0), ("y2", dy, 1)))
+    out.append(f'<line x1="{dx}" y1="{dy}" x2="{dx}" y2="{dy}" stroke="{P["amber"]}" stroke-width="1.6">{line}</line>'
+               + icon + est + '<g class="dl">' + text(dx + 2, dy + 34, "drift", P, 9.5, "amber", "m", weight="600") + "</g>")
+    show("dl", .62, .64, end=.67)
+    for i, (t0, t1, _) in enumerate(outs):
+        out.append(f'<g class="ot{i}">' + text(dx, 168, "fixes ignored", P, 9.5, "red", "m", weight="600",
+                                               anchor="middle") + "</g>")
+        show(f"ot{i}", t0, t0 + .01, end=t1 - .02)
+    out.append(text(dx, 186, "✕ reference  ◌ estimate", P, 8.5, "muted", "m", anchor="middle"))
+    out.append(text(dx, 212, "schematic", P, 9.5, "muted", "m", anchor="middle"))
+    # ---- real data: drift per outage on one public-dataset flight
+    x0, x1, y0, y1, top = 606.0, 812.0, 32.0, 178.0, 0.9
+    X = lambda t: x0 + t / 3.3 * (x1 - x0)
+    Y = lambda m: y1 - min(m, top) / top * (y1 - y0)
+    out.append(f'<rect x="{x0}" y="{y0}" width="{x1 - x0}" height="{y1 - y0}" fill="{P["bg"]}" stroke="{P["line"]}"/>')
+    for v in (.25, .5, .75):
+        out.append(f'<line x1="{x0}" x2="{x1}" y1="{f(Y(v))}" y2="{f(Y(v))}" stroke="{P["faint"]}"/>')
+    for v, lab in ((0, "0"), (.25, ".25"), (.5, ".50"), (.75, ".75")):
+        out.append(text(x0 - 5, Y(v) + 3, lab, P, 9, "muted", "m", anchor="end"))
+    out.append(text(x0 + 6, y0 + 13, "drift (m)", P, 9, "muted", "m"))
+    for t in (1, 1.5, 3):
+        out.append(text(X(t), y1 + 12, f"{t:g} s", P, 9, "muted", "m", anchor="middle"))
+    out.append(text((x0 + x1) / 2, 212, "outage length · one public flight", P, 9.5, "muted", "m", anchor="middle"))
+    r = rng(5)
+    lad = [(1.0, v) for v in d["ladder_1s"]] + [(1.5, v) for v in d["ladder_1.5s"]]
+    keys = [r() for _ in lad]
+    lad = [lad[i] for i in sorted(range(len(lad)), key=keys.__getitem__)]  # appear in a shuffled order
+    G = 6
+    groups = [[] for _ in range(G)]
+    for i, (t, v) in enumerate(lad):
+        groups[i * G // len(lad)].append(f'<circle cx="{f(X(t) + (r() - .5) * 16)}" cy="{f(Y(v))}" r="2.3"/>')
+    for g, dots in enumerate(groups):
+        out.append(f'<g class="ld{g}" fill="{P["blue"]}" fill-opacity=".75">{"".join(dots)}</g>')
+        show(f"ld{g}", .06 + g * .05, .08 + g * .05)
+    lim = d["limit_3s_m"]
+    own, sim = lim["ladder"], lim["simulator"]
+    xb, xl = X(3), X(1.5) + 12
+    out.append(f'<g class="bd"><rect x="{f(xb - 12)}" y="{f(Y(own))}" width="24" height="{f(y1 - Y(own))}" '
+               f'fill="{P["green"]}" fill-opacity=".18"/>'
+               f'<path d="M{f(xl)} {f(Y(own))} H{x1}" stroke="{P["green"]}" stroke-width="2"/>'
+               + text(xb - 16, Y(own) - 14, "limit from", P, 9, "green", "m", weight="600", anchor="end")
+               + text(xb - 16, Y(own) - 4, "own outages", P, 9, "green", "m", weight="600", anchor="end") + "</g>")
+    show("bd", .38, .41)
+    held = d["heldout_3s"]
+    n_own = sum(v > own for v in held)
+    n_sim = sum(v > sim for v in held)
+    n_fit = sum(v > lim["simulator_fitted"] for v in held)
+    hd = []
+    for v in held:
+        cls = "ho" if v > own else ("hs" if v > sim else "hn")
+        hd.append(f'<circle cx="{f(xb + (r() - .5) * 18)}" cy="{f(Y(v))}" r="2.6" class="{cls}"/>')
+    out.append(f'<g class="hd" fill="{P["violet"]}">{"".join(hd)}</g>')
+    show("hd", .52, .58)
+    css.append(f".ho{{animation:ho {T}s infinite}}@keyframes ho{{0%,62%{{fill:{P['violet']}}}64%,95%{{fill:{P['red']}}}"
+               f"98%,100%{{fill:{P['violet']}}}}}"
+               f".hs{{animation:hs {T}s infinite}}@keyframes hs{{0%,74%{{fill:{P['violet']}}}77%,95%{{fill:{P['red']}}}"
+               f"98%,100%{{fill:{P['violet']}}}}}")
+    out.append(f'<g class="sl"><path d="M{f(xl)} {f(Y(sim))} H{x1}" stroke="{P["red"]}" stroke-width="2" '
+               f'stroke-dasharray="4 3"/>'
+               + text(xb - 16, Y(sim) - 5, "simulator", P, 9, "red", "m", weight="600", anchor="end") + "</g>")
+    show("sl", .70, .73)
+    caps = [(.0, .37, f"1 · {len(lad)} short outages, one dot each"),
+            (.38, .50, "2 · predict the 3 s abort limit"),
+            (.52, .69, f"3 · {len(held)} held-out 3 s outages: {n_own} over"),
+            (.70, .95, f"4 · simulator's limit: {n_sim} of {len(held)} over")]
+    for i, (t0, t1, s) in enumerate(caps):
+        out.append(f'<g class="cp{i}">' + text(586, 21, s, P, 10, "ink", "m", weight="600") + "</g>")
+        show(f"cp{i}", t0, t0 + .01, end=t1)
+    # ---- six public datasets: share of held-out 3 s outages beyond each abort limit (target 10 %)
+    ex = d["abort_limit_exceedance_by_dataset"]
+    tx0, tx1 = 540.0, 752.0
+    TX = lambda p: tx0 + p * (tx1 - tx0)
+    out.append(text(432, 236, "abort limit exceeded, 6 public datasets (target 10 %)", P, 9.5, "ink", "m",
+                    weight="600"))
+    out.append(f'<path d="M{f(TX(.1))} 243 V286" stroke="{P["green"]}" stroke-dasharray="2 2"/>')
+    for i, (key, lab, col) in enumerate((("simulator", "datasheet sim", "red"),
+                                         ("simulator_fitted", "fitted sim", "red"),
+                                         ("ladder", "own outages", "green"))):
+        y = 252 + i * 15
+        vals = [v[key] for v in ex.values()]
+        out.append(text(432, y + 3, lab, P, 9.5, "muted", "m")
+                   + f'<line x1="{tx0}" x2="{tx1}" y1="{y}" y2="{y}" stroke="{P["faint"]}" stroke-width="4" '
+                   f'stroke-linecap="round"/>'
+                   + "".join(f'<circle cx="{f(TX(v))}" cy="{y}" r="3.6" fill="{P[col]}" fill-opacity=".8" '
+                             f'stroke="{P["card"]}"/>' for v in vals)
+                   + text(tx1 + 10, y + 3, f"{min(vals) * 100:.0f}–{max(vals) * 100:.0f} %", P, 9.5, "ink", "m"))
     left = hero_text(
-        P, "RESEARCH · FLUID DYNAMICS · PAPER", ["Navier–Stokes collapse"],
-        "A certified unstable eigenvalue of a columnar model of the front of Hou's "
-        "Navier–Stokes collapse (computer-assisted proof, interval arithmetic), and measured "
-        "non-axisymmetric growth on the collapsing state. Companion work: self-similar blowup profiles.",
-        ["Python", "NumPy/SciPy", "interval arithmetic"],
-        "random-seed curves from the paper's public figure data (figdata/)", "blue", False)
-    return doc(840, 300, P, "Navier–Stokes collapse",
-               "Animated chart of measured non-axisymmetric growth rates on Hou's collapsing Navier–Stokes state, "
-               "for two viscosities and azimuthal modes m = 0, 1, 2, drawn from the paper's figure data, beside a "
-               "schematic collapsing swirl.", left + "".join(out), css)
+        P, "RESEARCH · AERIAL ROBOTICS · SAFETY", ["Outage risk from", "short outages"],
+        "In flight, a drone briefly ignores its positioning while the system keeps a reference, so drift "
+        "is measured directly. Its own safe 1–1.5 s outages predict its longer ones; simulators "
+        "misjudge them.",
+        ["Python", "Crazyflie", "Lighthouse", "statistics"],
+        "real drift data from a public flight log · scene schematic", "blue", True)
+    desc = (f"Animated: a schematic drone ignores its positioning fixes while the base stations keep sweeping, and "
+            f"its estimate drifts away from the reference. Real offline data from one public-dataset flight: "
+            f"{len(lad)} short 1-1.5 s outages build a ladder of drift, a 3 s abort limit is predicted from them, and "
+            f"{n_own} of {len(held)} held-out 3 s outages exceed it, against {n_sim} (datasheet noise) and {n_fit} "
+            f"(fitted noise) of {len(held)} for the simulators' limits. Below: the share of outages beyond each "
+            f"limit on six public datasets.")
+    return doc(840, 300, P, "Outage risk from short outages", desc, left + "".join(out),
+               "".join(css))
 
 
 # ---------------------------------------------------------------- quantum (textbook surface code only)
@@ -389,5 +477,5 @@ def linear_a(P):
                "read, and the fraction check compares the entries with the KU-RO total.", left + frame)
 
 
-CARDS = {"banner": banner, "hero/drone": drone, "hero/navier-stokes": navier,
+CARDS = {"banner": banner, "hero/drone": drone, "hero/outage-risk": outage_risk,
          "hero/quantum": quantum, "hero/voice2vision": voice}

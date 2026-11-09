@@ -389,6 +389,41 @@ def proth(P):
                 "survivors remain, glowing because their primality is still unknown.", "".join(out), "".join(css))
 
 
+# ---------------------------------------------------------------- Navier-Stokes collapse (public figure data)
+def navier(P):
+    curves = json.loads((DATA / "ns_curves.json").read_text())
+    x0, x1, y0, y1 = 40.0, 286.0, 18.0, 112.0
+    X = lambda v: x0 + v / 36 * (x1 - x0)
+    Y = lambda v: y1 - (v + 2.2) / 4.6 * (y1 - y0)
+    cols = ["blue", "pink", "green", "violet"]
+    out = [f'<rect x="{x0}" y="{y0}" width="{x1 - x0}" height="{y1 - y0}" fill="{P["bg"]}" stroke="{P["line"]}"/>']
+    for v in (-2, -1, 1, 2):
+        out.append(f'<line x1="{x0}" x2="{x1}" y1="{f(Y(v))}" y2="{f(Y(v))}" stroke="{P["faint"]}"/>'
+                   + text(x0 - 5, Y(v) + 3, str(v), P, 8.5, "muted", "m", anchor="end"))
+    out.append(f'<line x1="{x0}" x2="{x1}" y1="{f(Y(0))}" y2="{f(Y(0))}" stroke="{P["muted"]}" '
+               f'stroke-dasharray="3 3"/>' + text(x0 - 5, Y(0) + 3, "0", P, 8.5, "muted", "m", anchor="end"))
+    for v in (0, 10, 20, 30):
+        out.append(text(X(v), y1 + 11, str(v), P, 8.5, "muted", "m", anchor="middle"))
+    out.append(text((x0 + x1) / 2, y1 + 24, "fraction of remaining time (%)", P, 9, "muted", "m",
+                    anchor="middle"))
+    for i, c in enumerate(curves):
+        pts = [(X(a), Y(b)) for a, b in c["pts"]]
+        out.append(f'<path d="{polyline(pts)}" pathLength="1" class="cv" style="animation-delay:{f(i * .35)}s" '
+                   f'fill="none" stroke="{P[cols[i]]}" stroke-width="2" stroke-linecap="round"/>')
+    out.append(text(300, 40, "rate σ(T−t)", P, 8.5, "ink", "m", weight="600"))
+    for i, c in enumerate(curves):
+        yy = 56 + i * 15
+        out.append(f'<line x1="300" x2="312" y1="{yy - 3}" y2="{yy - 3}" stroke="{P[cols[i]]}" stroke-width="2.2"/>'
+                   + text(316, yy, c["label"].replace("nu", "ν"), P, 8.5, "muted", "m"))
+    css = (".cv{stroke-dasharray:1;stroke-dashoffset:1;animation:dr 9s ease-in-out infinite both}"
+           "@keyframes dr{0%{stroke-dashoffset:1;opacity:1}38%{stroke-dashoffset:0}88%{stroke-dashoffset:0;opacity:1}"
+           "96%,100%{stroke-dashoffset:0;opacity:0}}")
+    return tile(P, "Navier–Stokes collapse", "Navier–Stokes collapse",
+                "Certified unstable eigenvalue + measured growth (paper)", False,
+                "Animation: measured non-axisymmetric growth rates on Hou's collapsing Navier–Stokes state for two "
+                "viscosities and modes m = 0, 1, 2 draw in, from the paper's public figure data.", "".join(out), css)
+
 CARDS = {"tiles/thesis": thesis, "tiles/final-platform": final_platform, "tiles/battleblips": battleblips,
          "tiles/doodle-coaster": doodle, "tiles/hephaestus-protocol": survivors, "tiles/candy-kings": candy,
-         "tiles/rosviz": rosviz, "tiles/fantasy": fantasy, "tiles/proth-prime-search": proth}
+         "tiles/rosviz": rosviz, "tiles/fantasy": fantasy, "tiles/proth-prime-search": proth,
+         "tiles/navier-stokes": navier}

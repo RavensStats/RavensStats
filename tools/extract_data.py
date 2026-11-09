@@ -1,10 +1,13 @@
 """Pull the small real-data extracts the hero cards are drawn from.
 
   python tools/extract_data.py <hou-front-stability clone> <drone-swarm repo clone> [<Proth survivors.bin>]
+  python tools/extract_data.py --outage-risk <util outcomes_add5.json> <results/ dir>
 
 Writes tools/data/ns_curves.json (growth-rate curves, public figure data),
 tools/data/drone_window.json (positions only: 6 drones, 20 sim-minutes; no metrics) and, given the
 Proth Prime Search phase-A bitmap, tools/data/proth_sieve_small_k.json (240 odd k: smallest factor or survivor).
+With --outage-risk: tools/data/outage_risk_flight.json (one public-dataset flight's per-outage drift at 1, 1.5 and 3 s,
+its abort limits, and the abort-limit exceedance means of six public datasets; numbers only).
 """
 import csv
 import json
@@ -70,8 +73,39 @@ def proth_sieve(bitmap, n=332_200_000, k_max=480, q_max=10 ** 6):
             "cells": [[k, 0 if alive(k) else small.get(k, -1)] for k in ks]}
 
 
+VB_DATASETS = {"util": "UTIL", "miluv": "MILUV", "nanobench": "NanoBench", "pfeiffer2021": "Pfeiffer 2021",
+               "tii": "TII racing", "taffanel2021": "Taffanel 2021"}
+VB_FLIGHT = "const1-trial1-tdoa2"  # the first UTIL flight in file order, not picked by its result
+
+
+def outage_risk(outcomes, results):
+    """Outage risk from short outages, offline arm: drift (m) = max |estimate - reference| over each withheld-fix spell."""
+    real = [o for o in json.loads(outcomes.read_text(encoding="utf-8"))["real"] if o["seq"] == VB_FLIGHT]
+    sup = lambda d: sorted(round(o[f"sup_{d:g}"], 4) for o in real if o["dur_s"] == d and o.get(f"sup_{d:g}"))
+    fit = json.loads((results / "airframe_fitted_util.json").read_text(encoding="utf-8"))
+    row = next(r for r in fit["per_flight_limits"] if r["unit"] == VB_FLIGHT)
+    keep = ("simulator", "simulator_fitted", "ladder")
+    exceed = {}
+    for k, lab in VB_DATASETS.items():
+        a = json.loads((results / f"airframe_fitted_{k}.json").read_text(encoding="utf-8"))["abort_limit_exceedance"]
+        exceed[lab] = {p: round(a[p]["mean"], 3) for p in keep} | {"flights": a["ladder"]["n"]}
+    return {"source": "offline outage replays on public flight logs: fixes withheld from the estimator, "
+                      "truth as the reference; drift = max |estimate - reference| over the spell (m)",
+            "dataset": "UTIL", "flight": VB_FLIGHT,
+            "ladder_1s": sup(1.0), "ladder_1.5s": sup(1.5), "heldout_3s": sup(3.0),
+            "limit_3s_m": {k: round(row["limit_m"][k], 4) for k in keep},
+            "exceed_this_flight": {k: round(row["exceed"][k], 3) for k in keep},
+            "abort_limit_exceedance_by_dataset": exceed,
+            "note": "simulator = datasheet IMU noise; simulator_fitted = noise fitted to tracked flight; "
+                    "ladder = predicted from the flight's own 1-1.5 s outages; abort limit = 90 % quantile (target 10 %)"}
+
+
 if __name__ == "__main__":
     OUT.mkdir(exist_ok=True)
+    if sys.argv[1] == "--outage-risk":
+        (OUT / "outage_risk_flight.json").write_text(json.dumps(outage_risk(Path(sys.argv[2]), Path(sys.argv[3])),
+                                                              separators=(",", ":")))
+        sys.exit(print("wrote outage_risk_flight.json"))
     (OUT / "ns_curves.json").write_text(json.dumps(ns_curves(Path(sys.argv[1]))))
     (OUT / "drone_window.json").write_text(json.dumps(drone_window(Path(sys.argv[2]))))
     if len(sys.argv) > 3:  # optional: <Proth Prime Search>/hephaestus_worker/allk/phaseA/survivors.bin
