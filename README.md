@@ -68,6 +68,7 @@ cards below show what each project does. Demos and code walk-throughs are availa
 - Upload a Linear A tablet drawing: a sign detector and a classifier (YOLO) locate the signs and propose readings, with hover details for each sign.
 - Quantities and fractions are interpreted and checked against the KU-RO ("total") entry, showing whether the tablet's arithmetic balances.
 - Vue frontend, FastAPI backend and a corpus-based reading view; Linear A is undeciphered, so the app reads signs and arithmetic, not language.
+- Deployed as an internal PhD research tool for international community-based research.
 
 https://github.com/user-attachments/assets/a9dcaa56-567a-4865-9641-fb5758889c16
 
