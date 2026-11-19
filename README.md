@@ -136,8 +136,8 @@ https://github.com/user-attachments/assets/a9dcaa56-567a-4865-9641-fb5758889c16
 <br><sub>Research · <a href="https://github.com/RavensStats/hou-front-stability">hou-front-stability</a> · Python · interval arithmetic</sub></td>
 </tr>
 <tr>
-<td><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/ddp-fsdp-scaling-dark.svg"><img alt="DDP vs FSDP scaling: grouped bars grow for DDP and FSDP training throughput at 1, 2 and 4 GPUs (about 23 thousand tokens per second on one GPU to about 86 and 87 thousand on four, roughly 93 % scaling efficiency for both), then bars show peak memory per GPU at four GPUs: DDP 22.9 GiB against FSDP 15.4 GiB. Real measurements from a Qwen2.5-0.5B fine-tune on four A100 GPUs." src="assets/tiles/ddp-fsdp-scaling-light.svg" width="100%"></picture>
-<br><sub>Research · ddp-fsdp-scaling-demo · Python · PyTorch · NCCL · private</sub></td>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="assets/tiles/ddp-fsdp-scaling-dark.svg"><img alt="DDP vs FSDP scaling: lines draw peak memory per GPU against model size from 0.5B to 7B on four A100 GPUs for DDP, FSDP ZeRO-2 and FSDP ZeRO-3. DDP climbs to 65 GiB at 3B and runs out of memory at 7B (marked against the 80 GB line), while ZeRO-2 and ZeRO-3 train 7B at 54 and 42 GiB. A side bar shows that about 91 % of NCCL time overlaps with compute in a profiled 7B ZeRO-3 step. Real measurements from the ddp-fsdp-scaling-demo size sweep." src="assets/tiles/ddp-fsdp-scaling-light.svg" width="100%"></picture>
+<br><sub>Research · ddp-fsdp-scaling-demo · Python · PyTorch · NCCL · FSDP · private</sub></td>
 <td></td>
 </tr>
 </table>
