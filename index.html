@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contribution Snake</title>
+<meta name="description" content="Play snake on RavensStats' GitHub contribution graph: every green square is a day with commits.">
+<style>
+  :root {
+    --bg: #ffffff; --card: #f6f8fa; --line: #d0d7de; --ink: #1f2328; --muted: #59636e;
+    --violet: #8250df; --pink: #bf3989; --red: #cf222e;
+    --g0: #ebedf0; --g1: #9be9a8; --g2: #40c463; --g3: #30a14e; --g4: #216e39;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117; --card: #161b22; --line: #30363d; --ink: #e6edf3; --muted: #9198a1;
+      --violet: #ab7df8; --pink: #f778ba; --red: #f85149;
+      --g0: #21262d; --g1: #0e4429; --g2: #006d32; --g3: #26a641; --g4: #39d353;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 32px 16px 48px; }
+  .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  .kicker { color: var(--violet); font-size: 12px; letter-spacing: .14em; font-weight: 600; }
+  h1 { margin: 4px 0 6px; font-size: 30px; letter-spacing: -.01em; }
+  p.lead { margin: 0 0 20px; color: var(--muted); max-width: 640px; }
+  .board { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+           padding: 18px 16px 14px; min-height: 220px; display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; width: 100%; touch-action: none; }
+  .hud { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 12px; font-size: 13px; color: var(--muted); }
+  .hud b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+             justify-content: center; gap: 10px; border-radius: 14px; text-align: center; padding: 16px;
+             background: color-mix(in srgb, var(--card) 62%, transparent); backdrop-filter: blur(1.5px); }
+  .overlay[hidden] { display: none; }
+  .overlay h2 { margin: 0; font-size: 20px; }
+  .overlay p { margin: 0; color: var(--muted); font-size: 14px; }
+  button { font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--line);
+           background: var(--bg); color: var(--ink); padding: 6px 16px; }
+  button.primary { background: var(--violet); border-color: var(--violet); color: #fff; font-weight: 600;
+                   padding: 10px 26px; font-size: 16px; }
+  button:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+         margin-top: 16px; }
+  .keys { color: var(--muted); font-size: 13px; }
+  kbd { font-family: inherit; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px;
+        padding: 0 5px; font-size: 12px; background: var(--bg); }
+  .pad { display: none; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(2, 48px); gap: 8px;
+         justify-content: center; margin-top: 16px; }
+  .pad button { border-radius: 12px; font-size: 20px; padding: 0; }
+  .pad .up { grid-column: 2; }
+  .pad .left { grid-column: 1; grid-row: 2; } .pad .down { grid-column: 2; grid-row: 2; }
+  .pad .right { grid-column: 3; grid-row: 2; }
+  @media (pointer: coarse) { .pad { display: grid; } .keys { display: none; } }
+  a { color: var(--violet); }
+  footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker mono">RAVENSSTATS · GITHUB</div>
+  <h1>Contribution Snake</h1>
+  <p class="lead">Every green square is a day with commits in the last year. Eat them all: each one makes you
+    longer, darker squares are worth more, and the edges wrap around.</p>
+
+  <div class="board">
+    <canvas id="c" aria-label="Snake game on the contribution graph"></canvas>
+    <div class="overlay" id="ov">
+      <h2 id="ovTitle">Ready?</h2>
+      <p id="ovText">The snake on autopilot is just showing off.</p>
+      <button class="primary" id="start">▶ Start</button>
+    </div>
+  </div>
+
+  <div class="hud mono" aria-live="polite">
+    <span>contributions eaten <b id="score">0</b></span>
+    <span>days eaten <b id="days">0</b></span>
+    <span>length <b id="len">3</b></span>
+    <span>days left <b id="left">0</b></span>
+    <span>best <b id="best">0</b></span>
+  </div>
+
+  <div class="pad" aria-label="Direction buttons">
+    <button class="up" data-d="up" aria-label="Up">↑</button>
+    <button class="left" data-d="left" aria-label="Left">←</button>
+    <button class="down" data-d="down" aria-label="Down">↓</button>
+    <button class="right" data-d="right" aria-label="Right">→</button>
+  </div>
+
+  <div class="row">
+    <span class="keys">Steer with <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>,
+      <kbd>Space</kbd> to pause. Swipe on touch screens.</span>
+    <span><button id="pause">Pause</button> <button id="restart">Restart</button></span>
+  </div>
+
+  <footer>Data: <span id="src">loading…</span> · <a href="https://github.com/RavensStats">back to the profile</a></footer>
+</main>
+<script>
+(() => {
+  const ROWS = 7;
+  const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  const $ = id => document.getElementById(id);
+  const cv = $("c"), ctx = cv.getContext("2d");
+  let cols = 53, cells = [];          // cells[c][r] = {count, level, exists}
+  let snake, dir, queue, food, score, days, mode = "attract", timer = null, cellPx = 12;
+  let vertical = false;               // narrow screens: weeks run down the page instead of across
+  const at = (c, r) => vertical ? [r, c] : [c, r];
+  // a screen direction -> the grid direction it means (transposed when vertical)
+  const fromScreen = { up: "left", down: "right", left: "up", right: "down" };
+
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const best = { get() { try { return +localStorage.getItem("snakeBest") || 0; } catch { return 0; } },
+                 set(v) { try { localStorage.setItem("snakeBest", v); } catch {} } };
+
+  function demoCalendar() {           // used only if contributions.json can't be loaded
+    let s = 7; const rnd = () => (s = (s * 1103515245 + 12345) % 2 ** 31) / 2 ** 31;
+    return Array.from({ length: 53 }, () => Array.from({ length: 7 }, (_, w) => {
+      const c = rnd() < .55 ? Math.floor(rnd() * 40) : 0;
+      return { c, l: c ? 1 + Math.min(3, Math.floor(c / 10)) : 0, w };
+    }));
+  }
+
+  async function load() {
+    try {
+      const r = await fetch("contributions.json", { cache: "no-store" });
+      if (!r.ok) throw 0;
+      const j = await r.json();
+      $("src").textContent = `@${j.login}'s calendar, ${j.total.toLocaleString()} contributions (updated ${j.generated})`;
+      return j.weeks;
+    } catch {
+      $("src").textContent = "demo calendar (live data unavailable)";
+      return demoCalendar();
+    }
+  }
+
+  function build(weeks) {
+    cols = weeks.length;
+    cells = weeks.map(w => {
+      const col = Array.from({ length: ROWS }, () => ({ count: 0, level: 0, exists: false }));
+      w.forEach(d => { col[d.w] = { count: d.c, level: d.l, exists: true }; });
+      return col;
+    });
+  }
+
+  function reset() {
+    const r = 3;
+    snake = [[2, r], [1, r], [0, r]];
+    dir = "right"; queue = []; score = 0; days = 0;
+    food = new Set();
+    cells.forEach((col, c) => col.forEach((x, rr) => { if (x.count > 0) food.add(c * ROWS + rr); }));
+    snake.forEach(([c, rr]) => food.delete(c * ROWS + rr));
+    hud();
+  }
+
+  const wrap = (c, r) => [(c + cols) % cols, (r + ROWS) % ROWS];
+  const step = ([c, r], d) => wrap(c + DIRS[d][0], r + DIRS[d][1]);
+  const opposite = { up: "down", down: "up", left: "right", right: "left" };
+
+  function autopilot() {               // BFS to the nearest day, avoiding the body
+    const body = new Set(snake.slice(0, -1).map(([c, r]) => c * ROWS + r));
+    const start = snake[0], seen = new Map([[start[0] * ROWS + start[1], null]]);
+    const q = [[start, null]];
+    while (q.length) {
+      const [p, first] = q.shift();
+      for (const d of Object.keys(DIRS)) {
+        const n = step(p, d), k = n[0] * ROWS + n[1];
+        if (seen.has(k) || body.has(k)) continue;
+        const f0 = first || d;
+        if (food.has(k)) return f0;
+        seen.set(k, f0); q.push([n, f0]);
+      }
+    }
+    return Object.keys(DIRS).find(d => { const [c, r] = step(start, d); return !body.has(c * ROWS + r); }) || dir;
+  }
+
+  function tick() {
+    if (mode === "attract") dir = autopilot();
+    else if (queue.length) dir = queue.shift();
+    const head = step(snake[0], dir), k = head[0] * ROWS + head[1];
+    const eating = food.has(k);
+    const body = snake.slice(0, eating ? snake.length : -1);
+    if (body.some(([c, r]) => c === head[0] && r === head[1])) {
+      if (mode === "attract") { reset(); draw(); return schedule(); }
+      return end(false);
+    }
+    snake.unshift(head);
+    if (eating) {
+      food.delete(k);
+      if (mode === "play") { score += cells[head[0]][head[1]].count; days += 1; }
+    } else snake.pop();
+    draw(); hud();
+    if (!food.size || (mode === "attract" && snake.length > 40)) { if (mode === "attract") reset(); else return end(true); }
+    schedule();
+  }
+
+  function schedule() {
+    clearTimeout(timer);
+    const ms = mode === "attract" ? 70 : Math.max(70, 150 - snake.length * 1.1);
+    timer = setTimeout(tick, ms);
+  }
+
+  function end(won) {
+    mode = "over"; clearTimeout(timer);
+    if (score > best.get()) best.set(score);
+    hud(); draw();
+    $("ovTitle").textContent = won ? "You ate the whole year!" : "Game over";
+    $("ovText").textContent = `${score.toLocaleString()} contributions across ${days} days · length ${snake.length}`;
+    $("start").textContent = "▶ Play again";
+    $("ov").hidden = false;
+    $("start").focus();
+  }
+
+  function start() {
+    reset(); mode = "play"; $("ov").hidden = true; $("pause").textContent = "Pause"; draw(); schedule();
+  }
+
+  function togglePause() {
+    if (mode === "play") { mode = "paused"; clearTimeout(timer); $("pause").textContent = "Resume"; }
+    else if (mode === "paused") { mode = "play"; $("pause").textContent = "Pause"; schedule(); }
+  }
+
+  function turn(d, screen = true) {
+    if (mode === "attract" || mode === "over") return;
+    if (screen && vertical) d = fromScreen[d];
+    if (mode === "paused") togglePause();
+    const last = queue.length ? queue[queue.length - 1] : dir;
+    if (d !== last && d !== opposite[last] && queue.length < 3) queue.push(d);
+  }
+
+  function hud() {
+    $("score").textContent = score.toLocaleString();
+    $("days").textContent = days; $("len").textContent = snake.length;
+    $("left").textContent = food.size; $("best").textContent = best.get().toLocaleString();
+  }
+
+  function resize() {
+    const w = cv.parentElement.clientWidth - 32;
+    vertical = w < cols * 9;
+    cellPx = vertical ? Math.max(8, Math.min(14, Math.floor(w / ROWS), Math.floor(innerHeight * .62 / cols)))
+                     : Math.min(16, Math.floor(w / cols));
+    const [gw, gh] = at(cols, ROWS);
+    const dpr = window.devicePixelRatio || 1;
+    cv.style.width = gw * cellPx + "px"; cv.style.height = gh * cellPx + "px";
+    cv.width = gw * cellPx * dpr; cv.height = gh * cellPx * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+
+  function rect(x, y, s, r, fill) {
+    ctx.fillStyle = fill; ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(x, y, s, s, r) : ctx.rect(x, y, s, s); ctx.fill();
+  }
+
+  function draw() {
+    if (!snake) return;
+    const g = [css("--g0"), css("--g1"), css("--g2"), css("--g3"), css("--g4")];
+    const gap = Math.max(1, Math.round(cellPx * .2)), s = cellPx - gap;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    cells.forEach((col, c) => col.forEach((x, r) => {
+      if (!x.exists) return;
+      const [px, py] = at(c, r);
+      rect(px * cellPx, py * cellPx, s, 2, food.has(c * ROWS + r) ? g[x.level] : g[0]);
+    }));
+    const violet = css("--violet");
+    snake.forEach(([c, r], i) => {
+      ctx.globalAlpha = i ? Math.max(.55, 1 - i / (snake.length * 1.6)) : 1;
+      const [px, py] = at(c, r);
+      rect(px * cellPx - gap / 2, py * cellPx - gap / 2, cellPx, 3, i ? violet : css("--pink"));
+    });
+    ctx.globalAlpha = 1;
+    const [hc, hr] = at(...snake[0]), [dx, dy] = at(...DIRS[dir]), e = Math.max(1.2, cellPx * .12);
+    ctx.fillStyle = "#fff";
+    for (const side of [-1, 1]) {
+      const ex = hc * cellPx + s / 2 + dx * s * .2 - dy * side * s * .22;
+      const ey = hr * cellPx + s / 2 + dy * s * .2 + dx * side * s * .22;
+      ctx.beginPath(); ctx.arc(ex, ey, e, 0, 7); ctx.fill();
+    }
+  }
+
+  const keymap = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right",
+                   w: "up", s: "down", a: "left", d: "right", W: "up", S: "down", A: "left", D: "right" };
+  addEventListener("keydown", e => {
+    if (keymap[e.key]) { e.preventDefault(); turn(keymap[e.key]); }
+    else if (e.key === " ") { e.preventDefault(); if (mode === "attract" || mode === "over") start(); else togglePause(); }
+    else if (e.key === "Enter" && (mode === "attract" || mode === "over")) start();
+  });
+  let t0 = null;
+  cv.addEventListener("pointerdown", e => { t0 = [e.clientX, e.clientY]; });
+  cv.addEventListener("pointerup", e => {
+    if (!t0) return;
+    const dx = e.clientX - t0[0], dy = e.clientY - t0[1]; t0 = null;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+    turn(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
+  });
+  document.querySelectorAll(".pad button").forEach(b => b.addEventListener("click", () => turn(b.dataset.d)));
+  $("start").addEventListener("click", start);
+  $("pause").addEventListener("click", togglePause);
+  $("restart").addEventListener("click", start);
+  addEventListener("resize", resize);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", draw);
+
+  load().then(w => { build(w); reset(); resize(); schedule(); });
+})();
+</script>
+</body>
+</html>
